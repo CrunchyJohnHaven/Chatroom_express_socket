@@ -1,0 +1,73 @@
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <title>Speed Login</title>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="/styles.css">
+        <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+        
+
+        <script type="text/javascript">
+            console.log("index.ejs initialized");
+            $(document).ready(function(){
+                console.log("ejs - doc ready");
+                var socket = io.connect();
+                $().ready(function(){
+                    console.log('got_new');
+                socket.emit('got_user', 'name')
+                return false;
+                });
+            
+                console.log("got_a_new_user - emit");
+                socket.on('new_user', function(data){
+                    name = data.user;
+                    console.log('start socket.on(new_user): ', data);
+                    document.getElementById('user').innerHTML= ""
+                    for (let i in data){
+                        let user_box = document.createElement("p");
+                        let user_info = document.createTextNode(data[i].name + ": " + data[i].about);
+                        user_box.appendChild(user_info);
+                        document.getElementById("user").appendChild(user_box);
+                        console.log('end socket.on(new_user): ', user_info);
+                    }
+                });
+                $('#post_message').submit(function(){
+                    var message = {
+                        message: $("#message").val(),
+                    }
+                    console.log("message: ", message );
+
+                socket.emit('post_message', message);
+                return false;
+                });
+                socket.on('messages', function(data){
+                    console.log('socket.on(message): ', data);
+                    document.getElementById("chat_area").innerHTML = "";
+                    for(let i in data){
+                        let user_message = document.createElement("m");
+                        let post = document.createTextNode(data[i].name + " : " + data[i].message);
+                        console.log('let post: ', post);
+                        user_message.appendChild(post);
+                        document.getElementById('chat_area').appendChild(user_message);
+                    }
+                })
+
+            });
+            
+            
+        </script>
+    </head>
+    <body>
+    <h1>Speed Chat Conversation Board</h1>
+    <div class="user" id="user"></div>
+    <br>
+    <div class="chat_area" id="chat_area"></div>
+    <form id="post_message" method='post'>
+    Post:<input type='text' id='message'>
+    <br>
+    <br>
+    <input type='submit' id='submit' value='Post Message'>
+        
+    </form>
+    </body>
+</html>
